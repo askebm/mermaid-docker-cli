@@ -1,18 +1,18 @@
 #!/bin/bash
 CONTAINER="minlag/mermaid-cli"
 shopt -s extglob
+# Excempt switches are usually output switches that point to a currrently non existent file
 declare -a EXCEMPT_SWITCHES=('-o' '--output')
 EXCEMPT_FLAG=0
 COMMAND="mmdc"
 VOLUMES=""
 
 update_command() {
+	local VOL
 	local ITEM=$1
 	if [[ -e $ITEM ]] || [[ $EXCEMPT_FLAG -eq 1 ]] ; then
-		if [[ -z $(echo "$ITEM" | grep -Eo "^/") ]]; then
-			ITEM="${PWD}/${ITEM}"
-		fi
-		local VOL=$(dirname ${ITEM})
+		ITEM=$(readlink -m  ${ITEM})
+		[[ -e ${ITEM} ]] && VOL=${ITEM} || VOL=$(dirname $ITEM)
 		VOLUMES="${VOLUMES} -v ${VOL}:${VOL}"
 	fi 
 	COMMAND="$COMMAND ${ITEM}"
